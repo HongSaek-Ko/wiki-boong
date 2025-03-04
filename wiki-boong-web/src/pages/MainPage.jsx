@@ -103,7 +103,7 @@ const MainPage = () => {
             {/* Main 3 column grid */}
             <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-5 lg:gap-4">
               {/* Left column */}
-              <div className="grid grid-cols-1 gap-4 lg:col-span-3">
+              <div className="grid grid-cols-1 gap-4 lg:col-span-6">
                 <section aria-labelledby="section-1-title">
                   <h2 id="section-1-title" className="sr-only">
                     지도에용
@@ -125,14 +125,13 @@ const MainPage = () => {
               </div>
 
               {/* 오른쪽 영역 */}
-              <div className="grid grid-cols-1 gap-4 lg:col-span-2">
+              {/* <div className="grid grid-cols-1 gap-4 lg:col-span-2">
                 <section aria-labelledby="section-2-title">
                   <h2 id="section-2-title" className="sr-only">
                     점포 목록
                   </h2>
                   <div className="overflow-hidden rounded-lg bg-white shadow">
                     <div className="">
-                      {/* 목록 페이지 */}
                       <MapComponent2
                         data={searchAddress}
                         transFilterData={childData}
@@ -143,7 +142,7 @@ const MainPage = () => {
                     </div>
                   </div>
                 </section>
-              </div>
+              </div> */}
             </div>
             {/* 하단 버튼(이미지)(위로가기, 제보/등록)) */}
             <div

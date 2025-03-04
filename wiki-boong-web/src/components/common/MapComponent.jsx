@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Map as KakaoMap,
+  KakaoMapMarkerClustererContext,
   MapMarker,
   MapTypeControl,
   MarkerClusterer,
@@ -382,7 +383,7 @@ function DetailMap({
             position: 'relative', // 지도 위에 버튼 깔기 위해 설정
             float: 'right', // 상동
           }}
-          level={2}
+          level={3}
         >
           {/* <DrawingManager> */}
           {/* <Toolbox /> */}
@@ -405,103 +406,107 @@ function DetailMap({
           <EventButtonContainer />
 
           {/* 맵 마커 목록: 영업 중 */}
-          {isOpenData.map((data, index) => (
-            <OpenMarkerContainer
-              index={index}
-              key={`OpenMarkerContainer-${data.lat}-${data.lng}`}
-              position={{ lat: data.lat, lng: data.lng }}
-              // 마커 마우스 올리면 나타나는 화면 div
-              content={
-                <div
-                  style={{
-                    width: '100%',
-                    whiteSpace: 'nowrap',
-                    height: '100%',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    padding: '10px',
-                    textAlign: 'center',
-                  }}
-                >
-                  가게명: {data.title} <hr />
-                  카테고리:{' '}
-                  {
-                    data.category === 'bread'
-                      ? '붕어빵'
-                      : data.category === 'snack'
-                        ? '분식'
-                        : data.category === 'hotteok'
-                          ? '호떡'
-                          : data.category === 'sweetPotato'
-                            ? '군고구마'
-                            : data.category // 조건에 맞지 않으면(예외) 원래 값 출력
-                  }{' '}
-                  <hr />
-                  {data.open === true ? (
-                    <div>영업 중</div>
-                  ) : (
-                    <div>영업 준비 중</div>
-                  )}
-                </div>
-              }
-              onClick={() => {
-                setSelectedMarker(index);
-                console.log('shopId: ', data.shopId);
-                moveToShop(data.shopId);
-              }}
-              isClicked={selectedMarker === index}
-            />
-          ))}
+          <MarkerClusterer averageCenter={true} minLevel={5}>
+            {isOpenData.map((data, index) => (
+              <OpenMarkerContainer
+                index={index}
+                key={`OpenMarkerContainer-${data.lat}-${data.lng}`}
+                position={{ lat: data.lat, lng: data.lng }}
+                // 마커 마우스 올리면 나타나는 화면 div
+                content={
+                  <div
+                    style={{
+                      width: '100%',
+                      whiteSpace: 'nowrap',
+                      height: '100%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      padding: '10px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    가게명: {data.title} <hr />
+                    카테고리:{' '}
+                    {
+                      data.category === 'bread'
+                        ? '붕어빵'
+                        : data.category === 'snack'
+                          ? '분식'
+                          : data.category === 'hotteok'
+                            ? '호떡'
+                            : data.category === 'sweetPotato'
+                              ? '군고구마'
+                              : data.category // 조건에 맞지 않으면(예외) 원래 값 출력
+                    }{' '}
+                    <hr />
+                    {data.open === true ? (
+                      <div>영업 중</div>
+                    ) : (
+                      <div>영업 준비 중</div>
+                    )}
+                  </div>
+                }
+                onClick={() => {
+                  setSelectedMarker(index);
+                  console.log('shopId: ', data.shopId);
+                  moveToShop(data.shopId);
+                }}
+                isClicked={selectedMarker === index}
+              />
+            ))}
+          </MarkerClusterer>
 
           {/* 맵 마커 목록: 영업 준비 중 */}
-          {isCloseData.map((data, index) => (
-            <CloseMarkerContainer
-              index={index}
-              key={`OpenMarkerContainer-${data.lat}-${data.lng}`}
-              position={{ lat: data.lat, lng: data.lng }}
-              // 마커 마우스 올리면 나타나는 화면 div
-              content={
-                <div
-                  style={{
-                    width: '100%',
-                    whiteSpace: 'nowrap',
-                    height: '100%',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    padding: '10px',
-                    textAlign: 'center',
-                  }}
-                >
-                  가게명: {data.title}
-                  <hr />
-                  카테고리:{' '}
-                  {
-                    data.category === 'bread'
-                      ? '붕어빵'
-                      : data.category === 'snack'
-                        ? '분식'
-                        : data.category === 'hotteok'
-                          ? '호떡'
-                          : data.category === 'sweetPotato'
-                            ? '군고구마'
-                            : data.category // 조건에 맞지 않으면(예외) 원래 값 출력
-                  }{' '}
-                  <hr />
-                  {data.open === true ? (
-                    <div>영업 중</div>
-                  ) : (
-                    <div>영업 준비 중</div>
-                  )}
-                </div>
-              }
-              onClick={() => {
-                setSelectedMarker(index);
-                console.log('shopId: ', data.shopId);
-                moveToShop(data.shopId);
-              }}
-              isClicked={selectedMarker === index}
-            />
-          ))}
+          <MarkerClusterer averageCenter={true} minLevel={5}>
+            {isCloseData.map((data, index) => (
+              <CloseMarkerContainer
+                index={index}
+                key={`OpenMarkerContainer-${data.lat}-${data.lng}`}
+                position={{ lat: data.lat, lng: data.lng }}
+                // 마커 마우스 올리면 나타나는 화면 div
+                content={
+                  <div
+                    style={{
+                      width: '100%',
+                      whiteSpace: 'nowrap',
+                      height: '100%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      padding: '10px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    가게명: {data.title}
+                    <hr />
+                    카테고리:{' '}
+                    {
+                      data.category === 'bread'
+                        ? '붕어빵'
+                        : data.category === 'snack'
+                          ? '분식'
+                          : data.category === 'hotteok'
+                            ? '호떡'
+                            : data.category === 'sweetPotato'
+                              ? '군고구마'
+                              : data.category // 조건에 맞지 않으면(예외) 원래 값 출력
+                    }{' '}
+                    <hr />
+                    {data.open === true ? (
+                      <div>영업 중</div>
+                    ) : (
+                      <div>영업 준비 중</div>
+                    )}
+                  </div>
+                }
+                onClick={() => {
+                  setSelectedMarker(index);
+                  console.log('shopId: ', data.shopId);
+                  moveToShop(data.shopId);
+                }}
+                isClicked={selectedMarker === index}
+              />
+            ))}
+          </MarkerClusterer>
           {/* </DrawingManager> */}
         </KakaoMap>
         <button onClick={onButtonClick} className="hidden"></button>

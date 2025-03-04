@@ -16,11 +16,11 @@ const initialNavigation = [
   { name: '호떡', href: '#', current: false },
 ];
 
-// 인증/제보값 초기화 객체(배열)
-const initialCertification = [
-  { name: '제보된 가게', href: '#', current: false },
-  { name: '사장님 직영점', href: '#', current: false },
-];
+// // 인증/제보값 초기화 객체(배열)
+// const initialCertification = [
+//   { name: '제보된 가게', href: '#', current: false },
+//   { name: '사장님 직영점', href: '#', current: false },
+// ];
 
 // 영업중 값 초기화 객체(배열)
 const initialIsOpen = [{ name: '영업 중', href: '#', current: false }];
@@ -40,7 +40,7 @@ export default function HeaderFilter({
 }) {
   // 필터 상태 관리
   const [navigation, setNavigation] = useState(initialNavigation); // 카테고리
-  const [certification, setCertification] = useState(initialCertification); // 인증/제보
+  // const [certification, setCertification] = useState(initialCertification); // 인증/제보
   const [isOpen, setIsOpen] = useState(initialIsOpen); // 영업중
 
   // 검색어 입력값
@@ -80,33 +80,33 @@ export default function HeaderFilter({
     // 필터 초기화 클릭 시 모든 상태값 초기화, all/0/0으로 요청
     if (itemName === '초기화') {
       setNavigation(initialNavigation);
-      setCertification(initialCertification);
+      // setCertification(initialCertification);
       setIsOpen(initialIsOpen);
       onFilterClick('all');
-      onCertClick(0);
+      // onCertClick(0);
       onOpenClick(0);
     }
   };
 
   // 제보/인증 클릭 이벤트
-  const certClick = (certName) => {
-    setCertification((prev) =>
-      prev.map((cert) =>
-        // 상동. 배열 중 n번째 객체와 클릭한 객체가 동일할 경우, 해당 객체의 current를 true로 설정
-        cert.name === certName
-          ? { ...cert, current: true }
-          : { ...cert, current: false }
-      )
-    );
+  // const certClick = (certName) => {
+  //   setCertification((prev) =>
+  //     prev.map((cert) =>
+  //       // 상동. 배열 중 n번째 객체와 클릭한 객체가 동일할 경우, 해당 객체의 current를 true로 설정
+  //       cert.name === certName
+  //         ? { ...cert, current: true }
+  //         : { ...cert, current: false }
+  //     )
+  //   );
 
-    // 사장님 직영점 -> -/2/- 로 요청
-    if (certName === '사장님 직영점') {
-      onCertClick(2);
-      // 제보된 가게 -> -/1/-로 요청
-    } else if (certName === '제보된 가게') {
-      onCertClick(1);
-    }
-  };
+  //   // 사장님 직영점 -> -/2/- 로 요청
+  //   if (certName === '사장님 직영점') {
+  //     onCertClick(2);
+  //     // 제보된 가게 -> -/1/-로 요청
+  //   } else if (certName === '제보된 가게') {
+  //     onCertClick(1);
+  //   }
+  // };
 
   // 영업 중 클릭 이벤트
   const openClick = (openName) => {
@@ -184,8 +184,8 @@ export default function HeaderFilter({
                       {item.name}
                     </a>
                   ))}
-                  <hr className="h-auto w-0.5 bg-white/60 mx-2" />
-                  {/* 제보/인증 여부 */}
+                  {/* <hr className="h-auto w-0.5 bg-white/60 mx-2" />
+                  제보/인증 여부 
                   {certification.map((cert) => (
                     <a
                       key={cert.name}
@@ -198,7 +198,7 @@ export default function HeaderFilter({
                     >
                       {cert.name}
                     </a>
-                  ))}
+                  ))} */}
                   <hr className="h-auto w-0.5 bg-white/60 mx-2" />
                   {/* 영업 중 */}
                   {isOpen.map((open) => (
@@ -207,7 +207,7 @@ export default function HeaderFilter({
                       href={open.href}
                       onClick={() => openClick(open.name)} // 필터 클릭 시 '영업 중' 요청
                       className={classNames(
-                        open.current ? 'bg-emerald-300' : 'text-black', // 논리 상 이상은 없으나 안먹는 색상(green-300 같이)이 있음...
+                        open.current ? 'bg-yellow-400' : 'text-black', // 논리 상 이상은 없으나 안먹는 색상(green-300 같이)이 있음...
                         'rounded-md px-3 py-2 mx-1 text-sm font-black bg-white hover:bg-yellow-950/10'
                       )}
                     >
@@ -215,12 +215,15 @@ export default function HeaderFilter({
                     </a>
                   ))}
                   {/* 필터 초기화 */}
-                  <a
-                    className="rounded-md px-3 pt-2.5 text-sm font-black ml-auto"
+                  <button
+                    className="rounded-md px-3 text-sm font-black"
                     onClick={() => clickEvent('초기화')}
                   >
-                    필터 초기화
-                  </a>
+                    <img
+                      src="/src/assets/icon/reset.png"
+                      className="h-6 mx-auto"
+                    />{' '}
+                  </button>
                 </nav>
               </div>
               <div className="mx-auto grid w-full max-w-md grid-cols-1 col-span-2 px-24">
@@ -303,7 +306,7 @@ export default function HeaderFilter({
                     <hr className="h-auto w-auto mt-2 bg-black mx-2" />
                   </div>
                   <div className="mb-2">
-                    {/* 제보/인증 여부 */}
+                    {/* 제보/인증 여부 
                     {certification.map((cert) => (
                       <a
                         key={cert.name}
@@ -316,7 +319,7 @@ export default function HeaderFilter({
                       >
                         {cert.name}
                       </a>
-                    ))}
+                    ))} */}
                     <hr className="h-auto w-auto my-2 bg-black mx-2" />
                   </div>
                   <div className="mt-2">
