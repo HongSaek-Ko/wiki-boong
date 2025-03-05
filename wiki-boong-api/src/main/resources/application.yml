@@ -3,7 +3,7 @@ spring:
     url: jdbc:mysql://localhost:3306/boong_api?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    password: 1234
+    password: 8064
 
   jpa:
     database: mysql
@@ -25,7 +25,7 @@ spring:
       max-file-size: 10MB
 
 # 파일 업로드 저장 경로
-shopapi.upload.path: upload
+wiki-boong-api.upload.path: upload
 
 
 # hibernate log

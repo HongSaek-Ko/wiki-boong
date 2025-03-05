@@ -29,6 +29,8 @@ function DetailMap({
   // const [snackData, setSnackData] = useState([]); // 서버데이터 중 category = 분식
   // const [sweetData, setSweetData] = useState([]); // 서버데이터 중 category = 군고구마
   // const [hotData, setHotData] = useState([]); // 서버데이터 중 category = 호떡
+  const timeData = new Date('18:00'); // 현재 시간
+  // const hourMinute = timeData.getHours() + ':' + timeData.getMinutes();
   const [cate, setCate] = useState('all'); // 카테고리, 기본 all
   const [role, setRole] = useState(0); // user: 1(true), owner: 2(false), 기본값 0 ('구분 없음')
   const [open, setOpen] = useState(0); // true: 1, 기본값: 0(준비중 포함)
@@ -97,6 +99,8 @@ function DetailMap({
       // setHotData(data.filter((e) => e.category == 'hotteok')); // (...호떡)
       console.log('serverData: ', serverData);
       console.log('isOpenData: ', isOpenData);
+      console.log(timeData);
+      // console.log(hourMinute);
     });
   }, [transFilterData, cate, role, transCertData, open, transOpenData]);
 
@@ -478,6 +482,7 @@ function DetailMap({
                   >
                     가게명: {data.title}
                     <hr />
+                    영업시간: {data.openTime} ~ {data.closeTime} <hr />
                     카테고리:{' '}
                     {
                       data.category === 'bread'

@@ -9,8 +9,11 @@ import useCustomMove from '../hooks/useCustomMove';
 import { getCookie } from '../util/cookieUtil';
 
 const MainPage = () => {
+  /* 쿠키 정보 상태값 */
   const [cookieMember, setCookieMember] = useState(''); // 쿠키 정보 가져오기
+  /* 검색 정보(히든) */
   const [data, setData] = useState(''); // 검색 클릭(히든) 전달
+  /* 검색 정보 상태값 */
   const [searchAddress, setSearchAddress] = useState(''); // 검색값 전달
 
   const [parentData, setParentData] = useState('all'); // filterData 상태값 전닫
@@ -64,13 +67,13 @@ const MainPage = () => {
   };
 
   // 위로가기 버튼
-  const MoveToTop = () => {
-    // top:0 >> 맨위로  behavior:smooth >> 부드럽게 이동할수 있게 설정하는 속성
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  // const MoveToTop = () => {
+  //   // top:0 >> 맨위로  behavior:smooth >> 부드럽게 이동할수 있게 설정하는 속성
+  //   window.scrollTo({ top: 0, behavior: 'smooth' });
+  // };
 
   // 제보/등록 버튼용 useCustomMove
-  const { moveToPost, moveToLogin } = useCustomMove();
+  // const { moveToPost, moveToLogin } = useCustomMove();
 
   // 쿠키 정보 가져오기 (가게 제보/등록 구분 위함) (useEffect으로 감싸야 자동 렌더링됨)
   useEffect(() => {
@@ -96,6 +99,7 @@ const MainPage = () => {
           filterData={parentData}
           certData={certData}
           openData={openData}
+          cookieMember={cookieMember}
         />
         <main className="bg-[#f9dfb1]">
           {/* <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8"> */}
@@ -145,7 +149,7 @@ const MainPage = () => {
               </div> */}
             </div>
             {/* 하단 버튼(이미지)(위로가기, 제보/등록)) */}
-            <div
+            {/* <div
               style={{
                 position: 'fixed',
                 margin: '40px',
@@ -158,18 +162,16 @@ const MainPage = () => {
                 zIndex: '10',
               }}
             >
-              {/* 위로가기 버튼 */}
               <img
                 src="./src/assets/icon/upArrow.png"
                 onClick={MoveToTop}
                 style={{ marginRight: '5px' }}
               />
-              {/* 제보/등록 버튼 (비로그인 시 로그인 페이지로 이동) */}
               <img
                 src="./src/assets/icon/regist.png"
                 onClick={cookieMember ? moveToPost : moveToLogin}
               />
-            </div>
+            </div> */}
           </div>
         </main>
       </div>

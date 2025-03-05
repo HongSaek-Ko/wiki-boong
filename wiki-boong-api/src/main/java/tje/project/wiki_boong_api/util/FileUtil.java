@@ -24,7 +24,7 @@ import java.util.UUID;
 @Slf4j
 public class FileUtil {
 
-    @Value("${shopapi.upload.path}")
+    @Value("${wiki-boong-api.upload.path}")
     private String uploadPath;
 
     @PostConstruct // 의존성 주입 이후, 초기화 수행 메서드 위에 부착하는 annotation. 한 번만 수행되는 걸 보장함

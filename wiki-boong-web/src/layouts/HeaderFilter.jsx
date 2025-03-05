@@ -1,19 +1,30 @@
 import {
+  MenuItems,
   Popover,
   PopoverBackdrop,
   PopoverButton,
+  PopoverGroup,
   PopoverPanel,
 } from '@headlessui/react';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  Bars3Icon,
+  ChevronDownIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { useState } from 'react';
+import BreadIcon from '../assets/icon/bread.png';
+import SnackIcon from '../assets/icon/tteok.png';
+import SweetPotato from '../assets/icon/sweetpotato.png';
+import Hotteok from '../assets/icon/hotteok2.png';
+import useCustomMove from '../hooks/useCustomMove';
 
 // 카테고리값 초기화 객체(배열)
 const initialNavigation = [
-  { name: '붕어빵', href: '#', current: false },
-  { name: '분식', href: '#', current: false },
-  { name: '군고구마', href: '#', current: false },
-  { name: '호떡', href: '#', current: false },
+  { name: '붕어빵', href: '#', current: false, icon: BreadIcon },
+  { name: '분식', href: '#', current: false, icon: SnackIcon },
+  { name: '군고구마', href: '#', current: false, icon: SweetPotato },
+  { name: '호떡', href: '#', current: false, icon: Hotteok },
 ];
 
 // // 인증/제보값 초기화 객체(배열)
@@ -23,7 +34,9 @@ const initialNavigation = [
 // ];
 
 // 영업중 값 초기화 객체(배열)
-const initialIsOpen = [{ name: '영업 중', href: '#', current: false }];
+const initialIsOpen = [
+  { name: '영업 중인 가게만 보기', href: '#', current: false },
+];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -37,12 +50,21 @@ export default function HeaderFilter({
   filterData,
   onCertClick,
   onOpenClick,
+  cookieMember,
 }) {
-  // 필터 상태 관리
+  /* 필터 상태 관리 */
   const [navigation, setNavigation] = useState(initialNavigation); // 카테고리
   // const [certification, setCertification] = useState(initialCertification); // 인증/제보
   const [isOpen, setIsOpen] = useState(initialIsOpen); // 영업중
 
+  // 선택된 필터값 들고 있을 상태값
+  const [selected, setSelected] = useState('');
+
+  // 모바일 메뉴
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // 등록 버튼 useCustomMove
+  const { moveToLogin, moveToPost } = useCustomMove();
   // 검색어 입력값
   const handleInputChange = (e) => {
     const newData = e.target.value;
@@ -76,6 +98,7 @@ export default function HeaderFilter({
     );
     // 필터 클릭값 요청을 위한 함수. {카테고리}/-/-로 요청
     onFilterClick(itemName);
+    setSelected(itemName);
 
     // 필터 초기화 클릭 시 모든 상태값 초기화, all/0/0으로 요청
     if (itemName === '초기화') {
@@ -118,7 +141,7 @@ export default function HeaderFilter({
       )
     );
     // 영업중 -> -/-/1로 요청
-    if (openName === '영업 중') {
+    if (openName === '영업 중인 가게만 보기') {
       onOpenClick(1);
     }
   };
@@ -167,11 +190,72 @@ export default function HeaderFilter({
             </div>
           </div>
           <div className="hidden border-t border-white/100 py-2 lg:block">
-            <div className="grid grid-cols-5 items-center gap-4">
-              <div className="col-span-3">
+            <div className="grid grid-cols-7 items-center">
+              {/* 필터 선택 부분 */}
+              <div className="col-span-2">
                 <nav className="flex">
+                  <PopoverGroup className="rounded-md px-3 py-2 mx-1 text-sm font-black bg-white hover:bg-yellow-950/10">
+                    <Popover className="relative">
+                      <PopoverButton className="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900">
+                        {selected && selected !== '초기화' ? (
+                          <span className="">{selected}</span>
+                        ) : (
+                          <span className="text-gray-500">카테고리 선택</span>
+                        )}
+                        <ChevronDownIcon
+                          aria-hidden="true"
+                          className="size-5 flex-none text-gray-400"
+                        />
+                      </PopoverButton>
+
+                      <PopoverPanel
+                        transition
+                        className="absolute top-full -left-4 z-10 mt-4 w-screen max-w-48 overflow-hidden rounded-lg 
+                        bg-white ring-1 shadow-lg ring-gray-900/5 transition 
+                        data-closed:translate-y-1 data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in"
+                      >
+                        <div className="">
+                          {navigation.map((item) => (
+                            <a
+                              key={item.name}
+                              className={classNames(
+                                item.current ? 'bg-yellow-200' : 'text-black',
+                                'rounded-lg px-4 py-2 text-base bg-white hover:bg-yellow-950/10',
+                                'group relative flex items-center gap-x-6 p-4 hover:bg-gray-50'
+                              )}
+                              onClick={() => clickEvent(item.name)} // 필터 클릭 시 '카테고리값' 요청
+                            >
+                              <img src={item.icon} className="size-10" />
+                              <div className="flex justify-center items-center">
+                                <a
+                                  href={item.href}
+                                  // onClick={() => clickEvent(item.name)} // 필터 클릭 시 '카테고리값' 요청
+                                >
+                                  {item.name}
+                                </a>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                        {/* 카테고리(원본) */}
+                        {/* {navigation.map((item) => (
+                          <a
+                            key={item.name}
+                            href={item.href}
+                            onClick={() => clickEvent(item.name)} // 필터 클릭 시 '카테고리값' 요청
+                            className={classNames(
+                              item.current ? 'bg-yellow-400' : 'text-black',
+                              'rounded-md px-3 py-2 mx-1 text-sm font-black bg-white hover:bg-yellow-950/10'
+                            )}
+                          >
+                            {item.name}
+                          </a>
+                        ))} */}
+                      </PopoverPanel>
+                    </Popover>
+                  </PopoverGroup>
                   {/* 카테고리 */}
-                  {navigation.map((item) => (
+                  {/* {navigation.map((item) => (
                     <a
                       key={item.name}
                       href={item.href}
@@ -183,7 +267,7 @@ export default function HeaderFilter({
                     >
                       {item.name}
                     </a>
-                  ))}
+                  ))} */}
                   {/* <hr className="h-auto w-0.5 bg-white/60 mx-2" />
                   제보/인증 여부 
                   {certification.map((cert) => (
@@ -199,7 +283,6 @@ export default function HeaderFilter({
                       {cert.name}
                     </a>
                   ))} */}
-                  <hr className="h-auto w-0.5 bg-white/60 mx-2" />
                   {/* 영업 중 */}
                   {isOpen.map((open) => (
                     <a
@@ -207,8 +290,8 @@ export default function HeaderFilter({
                       href={open.href}
                       onClick={() => openClick(open.name)} // 필터 클릭 시 '영업 중' 요청
                       className={classNames(
-                        open.current ? 'bg-yellow-400' : 'text-black', // 논리 상 이상은 없으나 안먹는 색상(green-300 같이)이 있음...
-                        'rounded-md px-3 py-2 mx-1 text-sm font-black bg-white hover:bg-yellow-950/10'
+                        open.current ? 'bg-yellow-300' : 'text-black', // 논리 상 이상은 없으나 안먹는 색상(green-300 같이)이 있음...
+                        'rounded-md px-3 py-2 mx-1 text-sm font-black bg-white hover:bg-yellow-950/10 flex items-center'
                       )}
                     >
                       {open.name}
@@ -216,7 +299,7 @@ export default function HeaderFilter({
                   ))}
                   {/* 필터 초기화 */}
                   <button
-                    className="rounded-md px-3 text-sm font-black"
+                    className="rounded-md px-2 text-sm font-black"
                     onClick={() => clickEvent('초기화')}
                   >
                     <img
@@ -226,7 +309,9 @@ export default function HeaderFilter({
                   </button>
                 </nav>
               </div>
-              <div className="mx-auto grid w-full max-w-md grid-cols-1 col-span-2 px-24">
+
+              {/* 검색창 부분 */}
+              <div className="grid col-span-3">
                 <input
                   onChange={handleInputChange}
                   onKeyDown={enter}
@@ -244,6 +329,18 @@ export default function HeaderFilter({
                   aria-hidden="true"
                   className="pointer-events-none col-start-1 row-start-1 ml-3 size-5 self-center text-black peer-focus:text-gray-400"
                 />
+              </div>
+
+              {/* 게시글 작성 부분 */}
+              <div className="col-span-2">
+                {' '}
+                <button
+                  className="rounded-md px-3 py-2 ml-auto text-sm font-black bg-white hover:bg-yellow-950/10 flex items-center"
+                  onClick={cookieMember ? moveToPost : moveToLogin}
+                >
+                  {' '}
+                  가게 등록하기
+                </button>
               </div>
             </div>
           </div>
@@ -303,7 +400,6 @@ export default function HeaderFilter({
                         {item.name}
                       </a>
                     ))}
-                    <hr className="h-auto w-auto mt-2 bg-black mx-2" />
                   </div>
                   <div className="mb-2">
                     {/* 제보/인증 여부 
@@ -320,7 +416,6 @@ export default function HeaderFilter({
                         {cert.name}
                       </a>
                     ))} */}
-                    <hr className="h-auto w-auto my-2 bg-black mx-2" />
                   </div>
                   <div className="mt-2">
                     {/* 영업 중 */}
