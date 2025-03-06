@@ -32,6 +32,9 @@ function DetailMap({
   const [open, setOpen] = useState(''); // true: 1, 기본값: 0(준비중 포함)
   const { moveToShop } = useCustomMove();
 
+  // 히든 데이터
+  const [hidden, setHidden] = useState(0);
+
   // 버튼 노출 유무
   const [showButton, setShowButton] = useState(false);
 
@@ -56,6 +59,19 @@ function DetailMap({
     center: { lat: '', lng: '' },
     // 지도 위치 변경시 panto를 이용할지(부드럽게 이동)
     isPanto: true,
+  });
+
+  const [state, setState] = useState({
+    // 지도의 초기 위치
+    center: { lat: 37.55518211651773, lng: 126.93729086731213 },
+    // 지도 위치 변경시 panto를 이용할지(부드럽게 이동)
+    isPanto: true,
+  });
+
+  // 검색한 위치의 중심 좌표
+  const [searchAddress, setSearchAddress] = useState({
+    lat: '',
+    lng: '',
   });
 
   // 현재 사용자 위치 받아오기 (geolocation)
@@ -102,42 +118,43 @@ function DetailMap({
   // 카테고리별 조회
   useEffect(() => {
     getMapList(transFilterData).then((data) => {
+      console.log('isCloseData: ', isCloseData);
+      console.log('현재 영역: ', mapLoc.bound);
       setCate(transFilterData); // 카테고리값
       // setRole(transCertData); // 인증값
       setOpen(transOpenData); // 영업값
       setServerData(data); // 점포 목록 데이터 (전체)
-      // 렌더링할 마커 (조건: 화면 범위 내)
-      setRenderingMarker(
-        data.filter(
-          (e) =>
-            e.lat >= mapLoc.bound.southLat &&
-            e.lat <= mapLoc.bound.northLat &&
-            e.lng >= mapLoc.bound.westlng &&
-            e.lat <= mapLoc.bound.eastlng
-        )
-      );
-      // 렌더링할 마커 중에서 영업 중
-      setIsOpenData(data.filter((e) => e.status == 'opened')); // (...영업 중)
-      // 렌더링할 마커 중에서 준비 중
-      setIsCloseData(data.filter((e) => e.status == 'closed')); // (...준비 중)
-
       console.log('serverData: ', serverData);
+      // 렌더링할 마커 (조건: 전체 목록 중 화면 범위에 들어오는 것)
+      if (serverData) {
+        setRenderingMarker(
+          serverData.filter(
+            (e) =>
+              e.lat > mapLoc.bound.southLat &&
+              e.lat < mapLoc.bound.northLat &&
+              e.lng > mapLoc.bound.westlng &&
+              e.lat < mapLoc.bound.eastlng
+          )
+        );
+        console.log('렌더링되는 마커: ', renderingMarker);
+      }
+      // 렌더링할 마커 중에서 영업 중
+      setIsOpenData(renderingMarker.filter((e) => e.status == 'opened')); // (...영업 중)
       console.log('isOpenData: ', isOpenData);
+      // 렌더링할 마커 중에서 준비 중
+      setIsCloseData(renderingMarker.filter((e) => e.status == 'closed')); // (...준비 중)
+
+      console.log(hidden);
     });
-  }, [transFilterData, cate, open, transOpenData, rendering]);
-
-  const [state, setState] = useState({
-    // 지도의 초기 위치
-    center: { lat: 37.55518211651773, lng: 126.93729086731213 },
-    // 지도 위치 변경시 panto를 이용할지(부드럽게 이동)
-    isPanto: true,
-  });
-
-  // 검색한 위치의 중심 좌표
-  const [searchAddress, setSearchAddress] = useState({
-    lat: '',
-    lng: '',
-  });
+  }, [
+    transFilterData,
+    cate,
+    open,
+    transOpenData,
+    rendering,
+    showButton,
+    hidden,
+  ]);
 
   // 주소에 해당하는 마커 표시
   useEffect(() => {
@@ -394,11 +411,11 @@ function DetailMap({
           position: 'absolute', // 지도 위에 버튼 깔기 위해 설정
           zIndex: '3', // 최소 지도 레이어(1)보다 높아야 함
           margin: '10px',
-          width: '3%',
+          width: '50px',
         }}
       >
         <img
-          className=" bg-white/95 rounded-3xl"
+          className=" bg-white/95 rounded-3xl w-auto h-auto"
           src="../src/assets/icon/curloc2.png"
           title="현재 위치로 이동"
         />
@@ -408,11 +425,21 @@ function DetailMap({
 
   // 현 위치에서 재검색 이벤트
   const searchCurLoc = () => {
+    setRenderingMarker(
+      serverData.filter(
+        (e) =>
+          e.lat > mapLoc.bound.southLat &&
+          e.lat < mapLoc.bound.northLat &&
+          e.lng > mapLoc.bound.westlng &&
+          e.lat < mapLoc.bound.eastlng
+      )
+    );
     // 재검색 버튼 false로 변경하여 숨기기
     setShowButton(false);
+    // Rendering true로 변경
     setRendering(true);
-    console.log(mapLoc);
-    console.log(serverData);
+    // 히든 데이터 변경
+    setHidden(+1);
   };
 
   // 현 위치에서 재검색 버튼 컨테이너
@@ -425,17 +452,17 @@ function DetailMap({
             style={{
               position: 'absolute', // 지도 위에 버튼 깔기 위해 설정
               zIndex: '3', // 최소 지도 레이어(1)보다 높아야 함
-              marginTop: '5px',
-              marginLeft: '50px',
-              objectFit: 'none',
-              display: 'flex',
+              marginTop: '10px',
+              left: '50%',
+              width: '200px',
+              transform: 'translateX(-50%)',
             }}
           >
             <img
               src="../src/assets/icon/researchCur.png"
-              title="현 지도에서 재검색"
+              title="현 위치에서 재검색"
               style={{
-                width: '45%',
+                width: '100%',
                 justifyItems: 'center',
               }}
             />
@@ -490,6 +517,7 @@ function DetailMap({
                 westlng: bound.getSouthWest().getLng(),
               },
             });
+            // console.log('지도 영역: ', mapLoc.bound);
             setShowButton(true);
           }}
         >

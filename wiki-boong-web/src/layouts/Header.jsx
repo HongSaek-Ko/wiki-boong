@@ -64,8 +64,6 @@ export default function Header() {
     ? getCookie('member')
     : { email: null };
 
-  console.log('cookie 확인 *****: {}', cookieMember);
-
   // 로그인 이전 볼 수 있는 링크
   const userNavigation = [
     { name: '로그인', href: '/member/login' },
@@ -98,7 +96,6 @@ export default function Header() {
   //cookieMember = getCookie('member') ? getCookie('member') : { email: null };
 
   const loginState = useSelector((state) => state.loginSlice);
-  console.log(loginState.roleNames);
 
   let numStat = 0;
 
