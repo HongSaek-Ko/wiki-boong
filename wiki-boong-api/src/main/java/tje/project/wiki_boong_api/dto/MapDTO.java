@@ -26,11 +26,14 @@ public class MapDTO {
     private boolean isOpen;
     private String Location;
     private boolean certificate;
-    private String openTime;
-    private String closeTime;
+    private LocalTime openTime;
+    private LocalTime closeTime;
+    private String status;
 
     // Entity → DTO
     public MapDTO toMapDTO(Map map) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        LocalTime currentTime = LocalTime.now();
         MapDTO mapDTO = new MapDTO();
         mapDTO.setMapId(map.getMapId());
         mapDTO.setShopId(map.getShop().getShopId());
@@ -42,18 +45,24 @@ public class MapDTO {
             mapDTO.setTitle(map.getShop().getShopOwner().getTitle());
             mapDTO.setLocation(map.getShop().getShopOwner().getLocation());
             mapDTO.setCategory(map.getShop().getShopOwner().getCategory());
-            mapDTO.setOpenTime(map.getShop().getShopOwner().getOpenTime());
-            mapDTO.setCloseTime(map.getShop().getShopOwner().getCloseTime());
+            mapDTO.setOpenTime(LocalTime.parse(map.getShop().getShopOwner().getOpenTime(), formatter));
+            mapDTO.setCloseTime(LocalTime.parse(map.getShop().getShopOwner().getCloseTime(),formatter));
             mapDTO.setOpen(map.getShop().getShopOwner().isOpen());
+            // status 설정: 'isOpen = true' 면 opened / 'false' 이면서 현재 시간이 개~폐점 시간 범위에 포함되면 opened / 전부 불충족 시 closed
+            mapDTO.setStatus(mapDTO.isOpen() ? "opened" : (currentTime.isAfter(mapDTO.getOpenTime()) && currentTime.isBefore(mapDTO.getCloseTime()) ? "opened" : "closed"));
+            log.info("영업 상태: {}", mapDTO.getStatus());
         }
         if (!map.getShop().isCertificate()) {
             mapDTO.setCertificate(false);
             mapDTO.setTitle(map.getShop().getShopUser().getTitle());
             mapDTO.setLocation(map.getShop().getShopUser().getLocation());
             mapDTO.setCategory(map.getShop().getShopUser().getCategory());
-            mapDTO.setOpenTime(map.getShop().getShopUser().getOpenTime());
-            mapDTO.setCloseTime(map.getShop().getShopUser().getCloseTime());
+            mapDTO.setOpenTime(LocalTime.parse(map.getShop().getShopUser().getOpenTime(), formatter));
+            mapDTO.setCloseTime(LocalTime.parse(map.getShop().getShopUser().getCloseTime(), formatter));
             mapDTO.setOpen(map.getShop().getShopUser().isOpen());
+            // 상동.
+            mapDTO.setStatus(mapDTO.isOpen() ? "opened" : (currentTime.isAfter(mapDTO.getOpenTime()) && currentTime.isBefore(mapDTO.getCloseTime()) ? "opened" : "closed"));
+            log.info("영업 상태: {}", mapDTO.getStatus());
         }
         return mapDTO;
     }
@@ -67,10 +76,5 @@ public class MapDTO {
                 .lng(this.lng)
                 .build();
         return map;
-    }
-
-    // 시간 계산 메서드
-    public void timeFormatter() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
     }
 }

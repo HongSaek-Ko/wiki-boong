@@ -20,12 +20,12 @@ const MainPage = () => {
   const [childData, setChildData] = useState('all');
 
   // 인증 상태값
-  const [certData, setCertData] = useState(0);
-  const [transCertData, setTransCertData] = useState(0);
+  // const [certData, setCertData] = useState(0);
+  // const [transCertData, setTransCertData] = useState(0);
 
   // 영업 상태값
-  const [openData, setOpenData] = useState(0);
-  const [transOpenData, setTransOpenData] = useState(0);
+  const [openData, setOpenData] = useState('');
+  const [transOpenData, setTransOpenData] = useState('');
 
   // 주소값 변경
   const handleChangeAddress = (newData) => {
@@ -42,7 +42,7 @@ const MainPage = () => {
     console.log('마커 클릭');
   };
 
-  // 필터 클릭 handleFilterClick → (HeadFilter)onFilterClick
+  // 카테고리 클릭 handleFilterClick → (HeadFilter)onFilterClick
   const handleFilterClick = (e) => {
     console.log('(MainPage) 필터 클릭');
     console.log('(MainPage)', e);
@@ -51,17 +51,16 @@ const MainPage = () => {
   };
 
   // 제보/인증 클릭
-  const handleCertFilter = (e) => {
-    console.log('(MainPage) 제보/인증');
-    console.log('(MainPage)', e);
-    setCertData(e);
-    setTransCertData(e);
-  };
+  // const handleCertFilter = (e) => {
+  //   console.log('(MainPage) 제보/인증');
+  //   console.log('(MainPage)', e);
+  //   setCertData(e);
+  //   setTransCertData(e);
+  // };
 
   // 영업중 클릭
   const handleOpenFilter = (e) => {
-    console.log('(MainPage) 필터 클릭: 영업 중');
-    console.log('(MainPage)', e);
+    console.log('(MainPage) 필터 - 영업 상태: ', e);
     setOpenData(e);
     setTransOpenData(e);
   };
@@ -94,10 +93,10 @@ const MainPage = () => {
           onChangeAddress={handleChangeAddress}
           onEnter={handleButtonClick}
           onFilterClick={handleFilterClick}
-          onCertClick={handleCertFilter}
+          // onCertClick={handleCertFilter}
           onOpenClick={handleOpenFilter}
           filterData={parentData}
-          certData={certData}
+          // certData={certData}
           openData={openData}
           cookieMember={cookieMember}
         />
@@ -120,7 +119,7 @@ const MainPage = () => {
                         onButtonClick={handleButtonClick}
                         onMarkerClick={handleMarkerClick}
                         transFilterData={childData}
-                        transCertData={transCertData}
+                        // transCertData={transCertData}
                         transOpenData={transOpenData}
                       />
                     </div>

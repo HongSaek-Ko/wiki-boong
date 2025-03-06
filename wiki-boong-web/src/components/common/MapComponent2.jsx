@@ -40,7 +40,7 @@ const MapComponent2 = ({
 
   // 게시글 목록 가져오기
   useEffect(() => {
-    getMapList(transFilterData, transCertData, transOpenData).then((data) => {
+    getMapList(transFilterData).then((data) => {
       setCate(transFilterData); // 카테고리 값 설정
       setRole(transCertData); // 구분(제보/인증) 값 설정
       setOpen(transOpenData); // 영업값

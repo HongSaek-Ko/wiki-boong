@@ -48,7 +48,7 @@ export default function HeaderFilter({
   onEnter,
   onFilterClick,
   filterData,
-  onCertClick,
+  // onCertClick,
   onOpenClick,
   cookieMember,
 }) {
@@ -133,6 +133,7 @@ export default function HeaderFilter({
 
   // 영업 중 클릭 이벤트
   const openClick = (openName) => {
+    // 클릭한 필터 색 변경
     setIsOpen((prev) =>
       prev.map((open) =>
         open.name === openName
@@ -142,7 +143,7 @@ export default function HeaderFilter({
     );
     // 영업중 -> -/-/1로 요청
     if (openName === '영업 중인 가게만 보기') {
-      onOpenClick(1);
+      onOpenClick('opened');
     }
   };
   return (
