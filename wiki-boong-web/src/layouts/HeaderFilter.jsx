@@ -18,6 +18,7 @@ import SnackIcon from '../assets/icon/tteok.png';
 import SweetPotato from '../assets/icon/sweetpotato.png';
 import Hotteok from '../assets/icon/hotteok2.png';
 import useCustomMove from '../hooks/useCustomMove';
+import resetIcon from '../assets/icon/reset.png';
 
 // 카테고리값 초기화 객체(배열)
 const initialNavigation = [
@@ -303,10 +304,7 @@ export default function HeaderFilter({
                     className="rounded-md px-2 text-sm font-black"
                     onClick={() => clickEvent('초기화')}
                   >
-                    <img
-                      src="/src/assets/icon/reset.png"
-                      className="h-6 mx-auto"
-                    />{' '}
+                    <img src={resetIcon} className="h-6 mx-auto" />{' '}
                   </button>
                 </nav>
               </div>

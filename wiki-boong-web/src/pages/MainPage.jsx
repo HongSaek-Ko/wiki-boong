@@ -93,10 +93,8 @@ const MainPage = () => {
           onChangeAddress={handleChangeAddress}
           onEnter={handleButtonClick}
           onFilterClick={handleFilterClick}
-          // onCertClick={handleCertFilter}
           onOpenClick={handleOpenFilter}
           filterData={parentData}
-          // certData={certData}
           openData={openData}
           cookieMember={cookieMember}
         />
@@ -119,7 +117,6 @@ const MainPage = () => {
                         onButtonClick={handleButtonClick}
                         onMarkerClick={handleMarkerClick}
                         transFilterData={childData}
-                        // transCertData={transCertData}
                         transOpenData={transOpenData}
                       />
                     </div>
@@ -147,30 +144,6 @@ const MainPage = () => {
                 </section>
               </div> */}
             </div>
-            {/* 하단 버튼(이미지)(위로가기, 제보/등록)) */}
-            {/* <div
-              style={{
-                position: 'fixed',
-                margin: '40px',
-                marginBottom: '20px',
-                bottom: '0',
-                right: '0',
-                display: 'flex',
-                justifyContent: 'center',
-                width: '3%',
-                zIndex: '10',
-              }}
-            >
-              <img
-                src="./src/assets/icon/upArrow.png"
-                onClick={MoveToTop}
-                style={{ marginRight: '5px' }}
-              />
-              <img
-                src="./src/assets/icon/regist.png"
-                onClick={cookieMember ? moveToPost : moveToLogin}
-              />
-            </div> */}
           </div>
         </main>
       </div>

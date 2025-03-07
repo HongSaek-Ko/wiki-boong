@@ -11,9 +11,16 @@ import {
 } from 'react-kakao-maps-sdk';
 import { getMapList } from '../../api/mapApi';
 import useCustomMove from '../../hooks/useCustomMove';
+import PermissionModal from './PermissionModal';
+import activeBooth from '../../assets/icon/location_star.png';
+import inactiveBooth from '../../assets/icon/location_star_off.png';
+import curloc from '../../assets/icon/curloc.png';
+import myLocation from '../../assets/icon/curloc3.png';
+import research from '../../assets/icon/researchCur.png';
+
 const { kakao } = window;
 
-function DetailMap({
+function MapComponent({
   data,
   onButtonClick,
   handleMarkerClick,
@@ -30,10 +37,9 @@ function DetailMap({
   // const [sw, setSw] = useState(''); // 지도 영역값 중 남서쪽
   // const [role, setRole] = useState(0); // user: 1(true), owner: 2(false), 기본값 0 ('구분 없음')
   const [open, setOpen] = useState(''); // true: 1, 기본값: 0(준비중 포함)
-  const { moveToShop } = useCustomMove();
-
-  // 히든 데이터
-  const [hidden, setHidden] = useState(0);
+  const [permission, setPermission] = useState('');
+  const { moveToShop } = useCustomMove(); // 해당 가게 정보로 이동
+  const [result, setResult] = useState(null);
 
   // 버튼 노출 유무
   const [showButton, setShowButton] = useState(false);
@@ -56,14 +62,14 @@ function DetailMap({
   // 현재 위치
   const [curLoc, setCurLoc] = useState({
     // 지도의 초기 위치
-    center: { lat: '', lng: '' },
+    center: { lat: '37.55522248964399', lng: '126.93696829042793' },
     // 지도 위치 변경시 panto를 이용할지(부드럽게 이동)
     isPanto: true,
   });
 
   const [state, setState] = useState({
     // 지도의 초기 위치
-    center: { lat: 37.55518211651773, lng: 126.93729086731213 },
+    center: { lat: '', lng: '' },
     // 지도 위치 변경시 panto를 이용할지(부드럽게 이동)
     isPanto: true,
   });
@@ -74,9 +80,25 @@ function DetailMap({
     lng: '',
   });
 
+  // 권한 정보 확인 (permission api)
+  useEffect(() => {
+    navigator.permissions
+      .query({ name: 'geolocation' })
+      .then(function (status) {
+        console.log('위치 권한 상태: ', status.state);
+        // 위치 권한 정보 업데이트
+        // 정보: grant(허용) / denied(거부) / prompt(요청)
+        setPermission(status.state);
+        status.onChange = function () {
+          console.log('위치 권한 상태 변경!', this.state);
+        };
+      });
+  }, [status.state]);
+
   // 현재 사용자 위치 받아오기 (geolocation)
   useEffect(() => {
     if (navigator.geolocation) {
+      setPermission('granted');
       navigator.geolocation.getCurrentPosition(
         (position) => {
           // 위치 상태값(state) 설정
@@ -109,7 +131,7 @@ function DetailMap({
     } else {
       setState((prev) => ({
         ...prev,
-        errMsg: 'geolocation을 사용할수 없어요..',
+        errMsg: 'geolocation 사용 불가',
         isLoading: false,
       }));
     }
@@ -117,44 +139,43 @@ function DetailMap({
 
   // 카테고리별 조회
   useEffect(() => {
-    getMapList(transFilterData).then((data) => {
-      console.log('isCloseData: ', isCloseData);
-      console.log('현재 영역: ', mapLoc.bound);
-      setCate(transFilterData); // 카테고리값
-      // setRole(transCertData); // 인증값
-      setOpen(transOpenData); // 영업값
-      setServerData(data); // 점포 목록 데이터 (전체)
-      console.log('serverData: ', serverData);
-      // 렌더링할 마커 (조건: 전체 목록 중 화면 범위에 들어오는 것)
-      if (serverData) {
-        setRenderingMarker(
-          serverData.filter(
-            (e) =>
-              e.lat > mapLoc.bound.southLat &&
-              e.lat < mapLoc.bound.northLat &&
-              e.lng > mapLoc.bound.westlng &&
-              e.lat < mapLoc.bound.eastlng
-          )
-        );
-        console.log('렌더링되는 마커: ', renderingMarker);
-      }
-      // 렌더링할 마커 중에서 영업 중
-      setIsOpenData(renderingMarker.filter((e) => e.status == 'opened')); // (...영업 중)
-      console.log('isOpenData: ', isOpenData);
-      // 렌더링할 마커 중에서 준비 중
-      setIsCloseData(renderingMarker.filter((e) => e.status == 'closed')); // (...준비 중)
+    if (showButton == false) {
+      getMapList(transFilterData).then((data) => {
+        console.log('isCloseData: ', isCloseData);
+        console.log('현재 영역: ', mapLoc.bound);
+        console.log('transFilterData: ', transFilterData);
+        // setRole(transCertData); // 인증값
 
-      console.log(hidden);
-    });
-  }, [
-    transFilterData,
-    cate,
-    open,
-    transOpenData,
-    rendering,
-    showButton,
-    hidden,
-  ]);
+        setServerData(data); // 점포 목록 데이터 (전체)
+        console.log('serverData: ', serverData);
+        // 렌더링할 마커 (조건: 전체 목록 중 화면 범위에 들어오는 것)
+        if (renderingMarker) {
+          setRenderingMarker(
+            data.filter(
+              (e) =>
+                e.lat > mapLoc.bound.southLat &&
+                e.lat < mapLoc.bound.northLat &&
+                e.lng > mapLoc.bound.westlng &&
+                e.lng < mapLoc.bound.eastlng
+            )
+          );
+          // 재검색 버튼이 없을 때만 실행
+          setCate(transFilterData); // 카테고리값
+          console.log('렌더링되는 마커: ', renderingMarker);
+        }
+
+        // 렌더링할 마커 중에서 영업 중
+        setIsOpenData(renderingMarker.filter((e) => e.status == 'opened')); // (...영업 중)
+        console.log('isOpenData: ', isOpenData);
+        // 렌더링할 마커 중에서 준비 중
+        setIsCloseData(renderingMarker.filter((e) => e.status == 'closed')); // (...준비 중)
+        console.log('isCloseData: ', isCloseData);
+        if (isOpenData) {
+          setOpen(transOpenData); // 영업값
+        }
+      });
+    }
+  }, [transFilterData, cate, transOpenData, rendering, showButton]);
 
   // 주소에 해당하는 마커 표시
   useEffect(() => {
@@ -204,7 +225,9 @@ function DetailMap({
             onMouseOver={() => setIsVisible(true)}
             onMouseOut={() => setIsVisible(false)}
             image={{
-              src: '../src/assets/icon/booth_active.png', // 마커이미지 주소
+              // 그냥 객체로는 못 가져오고, ${} 형태로 가져와야 함
+              src: `${activeBooth}`,
+              // 마커이미지 주소
               size: {
                 width: 50,
                 height: 50,
@@ -242,10 +265,10 @@ function DetailMap({
               onMouseOver={() => setIsVisible(true)} // 마우스 올리면 노출
               onMouseOut={() => setIsVisible(false)} // 마커에서 마우스 벗어나면 숨김
               image={{
-                src: '../src/assets/icon/booth_inactive.png', // 마커이미지 주소
+                src: `${inactiveBooth}`, // 마커이미지 주소
                 size: {
                   width: 40,
-                  height: 40,
+                  height: 43,
                 }, // 마커이미지의 크기입니다
               }}
             >
@@ -256,137 +279,9 @@ function DetailMap({
     );
   };
 
-  // 마커: 붕어빵
-  // const BreadMarkerContainer = ({ position, content, onClick, isClicked }) => {
-  //   const map = useMap();
-  //   const [isVisible, setIsVisible] = useState(false);
-
-  //   const handleMarkerClick = () => {
-  //     onClick(); // 부모 컴포넌트에서 전달된 onClick 함수 호출
-  //   };
-
-  //   return (
-  //     <>
-  //       {/* 조건부 렌더링(없어도 됨) */}
-  //       {breadData && (
-  //         <MapMarker
-  //           position={position}
-  //           onClick={handleMarkerClick}
-  //           onMouseOver={() => setIsVisible(true)}
-  //           onMouseOut={() => setIsVisible(false)}
-  //           image={{
-  //             src: '../src/assets/icon/bread.png', // 마커이미지 주소
-  //             size: {
-  //               width: 32,
-  //               height: 32,
-  //             }, // 마커이미지의 크기입니다
-  //           }}
-  //         >
-  //           {isVisible && content}
-  //         </MapMarker>
-  //       )}
-  //     </>
-  //   );
-  // };
-
-  // // 마커: 분식
-  // const SnackMarkerContainer = ({ position, content, onClick, isClicked }) => {
-  //   const map = useMap();
-  //   const [isVisible, setIsVisible] = useState(false);
-
-  //   const handleMarkerClick = () => {
-  //     onClick(); // 부모 컴포넌트에서 전달된 onClick 함수 호출
-  //   };
-
-  //   return (
-  //     <>
-  //       {/* 조건부 렌더링(없어도 됨) */}
-  //       {breadData && (
-  //         <MapMarker
-  //           position={position}
-  //           onClick={handleMarkerClick}
-  //           onMouseOver={() => setIsVisible(true)}
-  //           onMouseOut={() => setIsVisible(false)}
-  //           image={{
-  //             src: '../src/assets/icon/snack.png', // 마커이미지 주소
-  //             size: {
-  //               width: 32,
-  //               height: 32,
-  //             }, // 마커이미지의 크기입니다
-  //           }}
-  //         >
-  //           {isVisible && content}
-  //         </MapMarker>
-  //       )}
-  //     </>
-  //   );
-  // };
-
-  // // 마커: 군고구마
-  // const SweetMarkerContainer = ({ position, content, onClick, isClicked }) => {
-  //   const map = useMap();
-  //   const [isVisible, setIsVisible] = useState(false);
-
-  //   const handleMarkerClick = () => {
-  //     onClick(); // 부모 컴포넌트에서 전달된 onClick 함수 호출
-  //   };
-
-  //   return (
-  //     <>
-  //       {/* 조건부 렌더링(없어도 됨) */}
-  //       {sweetData && (
-  //         <MapMarker
-  //           position={position}
-  //           onClick={handleMarkerClick}
-  //           onMouseOver={() => setIsVisible(true)}
-  //           onMouseOut={() => setIsVisible(false)}
-  //           image={{
-  //             src: '../src/assets/icon/sweetPotato.png', // 마커이미지 주소
-  //             size: {
-  //               width: 32,
-  //               height: 32,
-  //             }, // 마커이미지의 크기입니다
-  //           }}
-  //         >
-  //           {isVisible && content}
-  //         </MapMarker>
-  //       )}
-  //     </>
-  //   );
-  // };
-
-  // // 마커: 호떡
-  // const HotMarkerContainer = ({ position, content, onClick, isClicked }) => {
-  //   const map = useMap();
-  //   const [isVisible, setIsVisible] = useState(false);
-
-  //   const handleMarkerClick = () => {
-  //     onClick(); // 부모 컴포넌트에서 전달된 onClick 함수 호출
-  //   };
-
-  //   return (
-  //     <>
-  //       {/* 조건부 렌더링(없어도 됨) */}
-  //       {hotData && (
-  //         <MapMarker
-  //           position={position}
-  //           onClick={handleMarkerClick}
-  //           onMouseOver={() => setIsVisible(true)}
-  //           onMouseOut={() => setIsVisible(false)}
-  //           image={{
-  //             src: '../src/assets/icon/hotteok.png', // 마커이미지 주소
-  //             size: {
-  //               width: 32,
-  //               height: 32,
-  //             }, // 마커이미지의 크기입니다
-  //           }}
-  //         >
-  //           {isVisible && content}
-  //         </MapMarker>
-  //       )}
-  //     </>
-  //   );
-  // };
+  const closeModal = () => {
+    setResult(null);
+  };
 
   // 현위치로 이동 버튼 (좌상단)
   const EventButtonContainer = () => {
@@ -397,29 +292,41 @@ function DetailMap({
       lng: mapCenter.getLng(),
     };
     const goBack = () => {
-      const newLatLng = new kakao.maps.LatLng(
-        curLoc.center.lat,
-        curLoc.center.lng
-      );
-      map.panTo(newLatLng);
-      console.log(mapLatLng);
+      // 위치 권한 있을(granted) 떄만 실행
+      if (permission == 'granted') {
+        const newLatLng = new kakao.maps.LatLng(
+          curLoc.center.lat,
+          curLoc.center.lng
+        );
+        map.panTo(newLatLng);
+        console.log(mapLatLng);
+      } else {
+        return setResult('asdf');
+      }
     };
     return (
-      <button
-        onClick={goBack}
-        style={{
-          position: 'absolute', // 지도 위에 버튼 깔기 위해 설정
-          zIndex: '3', // 최소 지도 레이어(1)보다 높아야 함
-          margin: '10px',
-          width: '50px',
-        }}
-      >
-        <img
-          className=" bg-white/95 rounded-3xl w-auto h-auto"
-          src="../src/assets/icon/curloc2.png"
-          title="현재 위치로 이동"
-        />
-      </button>
+      <>
+        {result === 'asdf' ? (
+          <PermissionModal callbackFn={closeModal} />
+        ) : (
+          <></>
+        )}
+        <button
+          onClick={goBack}
+          style={{
+            position: 'absolute', // 지도 위에 버튼 깔기 위해 설정
+            zIndex: '3', // 최소 지도 레이어(1)보다 높아야 함
+            margin: '10px',
+            width: '50px',
+          }}
+        >
+          <img
+            className=" bg-white/95 rounded-3xl w-auto h-auto"
+            src={curloc}
+            title="현재 위치로 이동"
+          />
+        </button>
+      </>
     );
   };
 
@@ -431,15 +338,13 @@ function DetailMap({
           e.lat > mapLoc.bound.southLat &&
           e.lat < mapLoc.bound.northLat &&
           e.lng > mapLoc.bound.westlng &&
-          e.lat < mapLoc.bound.eastlng
+          e.lng < mapLoc.bound.eastlng
       )
     );
     // 재검색 버튼 false로 변경하여 숨기기
     setShowButton(false);
     // Rendering true로 변경
     setRendering(true);
-    // 히든 데이터 변경
-    setHidden(+1);
   };
 
   // 현 위치에서 재검색 버튼 컨테이너
@@ -459,7 +364,7 @@ function DetailMap({
             }}
           >
             <img
-              src="../src/assets/icon/researchCur.png"
+              src={research}
               title="현 위치에서 재검색"
               style={{
                 width: '100%',
@@ -476,9 +381,9 @@ function DetailMap({
     <>
       <div id="mapwrap">
         {/* 카카오맵 */}
-        <KakaoMap
-          center={state.center} // state값에 따라 지도 중심 설정 (state: 페이지 로딩, 검색 시 변동)
-          isPanto={state.isPanto}
+        <Map
+          center={curLoc.center} // state값에 따라 지도 중심 설정 (state: 페이지 로딩, 검색 시 변동)
+          isPanto={curLoc.isPanto}
           style={{
             width: '100%',
             height: '75vh',
@@ -486,19 +391,6 @@ function DetailMap({
             float: 'right', // 상동
           }}
           level={3}
-          // 중심좌표 변경 시 발생하는 이벤트
-          // onCenterChanged={(e) => {
-          //   const level = e.getLevel();
-          //   const latLng = e.getCenter();
-          //   setMapLoc({
-          //     level: level,
-          //     position: {
-          //       lat: latLng.getLat(),
-          //       lng: latLng.getLng(),
-          //     },
-          //   });
-          //   setShowButton(true);
-          // }}
           // 지도 영역 변경 감지
           onBoundsChanged={(e) => {
             const level = e.getLevel();
@@ -525,14 +417,14 @@ function DetailMap({
           {/* <Toolbox /> */}
 
           {/* 현재 내 위치 마커. 모든 마커는 반드시 맵 다음에 와야 함 */}
-          {!state.isLoading && (
+          {!curLoc.isLoading && (
             <MapMarker
               position={curLoc.center} // curLoc 값에 따라 마커 설정 (고정)
               image={{
-                src: '../src/assets/icon/location.png',
+                src: `${myLocation}`,
                 size: {
-                  width: 50,
-                  height: 50,
+                  width: 40,
+                  height: 40,
                 },
               }}
               title="나는 여기에 있어용"
@@ -554,7 +446,7 @@ function DetailMap({
                 // calculator 각 사이 값 마다 적용될 스타일을 지정한다
                 width: '30px',
                 height: '30px',
-                background: 'rgba(245, 77, 77, 0.83)',
+                background: 'rgba(240, 236, 20, 1)',
                 borderRadius: '15px',
                 color: '#000',
                 textAlign: 'center',
@@ -563,57 +455,111 @@ function DetailMap({
               },
             ]}
           >
-            {isOpenData.map((data, index) => (
-              <OpenMarkerContainer
-                index={index}
-                key={`OpenMarkerContainer-${data.lat}-${data.lng}`}
-                position={{ lat: data.lat, lng: data.lng }}
-                // 마커 마우스 올리면 나타나는 화면 div
-                content={
-                  <div
-                    style={{
-                      width: '100%',
-                      whiteSpace: 'nowrap',
-                      height: '100%',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      padding: '10px',
-                      textAlign: 'center',
+            {renderingMarker.map((data, index) => {
+              if (data.status == 'opened') {
+                return (
+                  <OpenMarkerContainer
+                    index={index}
+                    key={`OpenMarkerContainer-${data.lat}-${data.lng}`}
+                    position={{ lat: data.lat, lng: data.lng }}
+                    // 마커 마우스 올리면 나타나는 화면 div
+                    content={
+                      <div
+                        style={{
+                          width: '100%',
+                          whiteSpace: 'nowrap',
+                          height: '100%',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          padding: '10px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        가게명: {data.title}
+                        <hr />
+                        카테고리:{' '}
+                        {
+                          data.category === 'bread'
+                            ? '붕어빵'
+                            : data.category === 'snack'
+                              ? '분식'
+                              : data.category === 'hotteok'
+                                ? '호떡'
+                                : data.category === 'sweetPotato'
+                                  ? '군고구마'
+                                  : data.category // 조건에 맞지 않으면(예외) 원래 값 출력
+                        }{' '}
+                        <hr />
+                        {data.status === 'opened' ? (
+                          <div>영업 중</div>
+                        ) : (
+                          <div>영업 준비 중</div>
+                        )}
+                      </div>
+                    }
+                    onClick={() => {
+                      setSelectedMarker(index);
+                      console.log('shopId: ', data.shopId);
+                      moveToShop(data.shopId);
                     }}
-                  >
-                    가게명: {data.title} <hr />
-                    카테고리:{' '}
-                    {
-                      data.category === 'bread'
-                        ? '붕어빵'
-                        : data.category === 'snack'
-                          ? '분식'
-                          : data.category === 'hotteok'
-                            ? '호떡'
-                            : data.category === 'sweetPotato'
-                              ? '군고구마'
-                              : data.category // 조건에 맞지 않으면(예외) 원래 값 출력
-                    }{' '}
-                    <hr />
-                    {data.status === 'opened' ? (
-                      <div>영업 중</div>
-                    ) : (
-                      <div>영업 준비 중</div>
-                    )}
-                  </div>
-                }
-                onClick={() => {
-                  setSelectedMarker(index);
-                  console.log('shopId: ', data.shopId);
-                  moveToShop(data.shopId);
-                }}
-                isClicked={selectedMarker === index}
-              />
-            ))}
+                    isClicked={selectedMarker === index}
+                  />
+                );
+              } else {
+                return (
+                  <CloseMarkerContainer
+                    index={index}
+                    key={`OpenMarkerContainer-${data.lat}-${data.lng}`}
+                    position={{ lat: data.lat, lng: data.lng }}
+                    // 마커 마우스 올리면 나타나는 화면 div
+                    content={
+                      <div
+                        style={{
+                          width: '100%',
+                          whiteSpace: 'nowrap',
+                          height: '100%',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          padding: '10px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        가게명: {data.title}
+                        <hr />
+                        카테고리:{' '}
+                        {
+                          data.category === 'bread'
+                            ? '붕어빵'
+                            : data.category === 'snack'
+                              ? '분식'
+                              : data.category === 'hotteok'
+                                ? '호떡'
+                                : data.category === 'sweetPotato'
+                                  ? '군고구마'
+                                  : data.category // 조건에 맞지 않으면(예외) 원래 값 출력
+                        }{' '}
+                        <hr />
+                        {data.status === 'opened' ? (
+                          <div>영업 중</div>
+                        ) : (
+                          <div>영업 준비 중</div>
+                        )}
+                      </div>
+                    }
+                    onClick={() => {
+                      setSelectedMarker(index);
+                      console.log('shopId: ', data.shopId);
+                      moveToShop(data.shopId);
+                    }}
+                    isClicked={selectedMarker === index}
+                  />
+                );
+              }
+            })}
           </MarkerClusterer>
 
           {/* 맵 마커 목록: 영업 준비 중 */}
-          <MarkerClusterer
+          {/* <MarkerClusterer
             averageCenter={true}
             minLevel={5}
             calculator={[10, 30, 50]}
@@ -632,61 +578,15 @@ function DetailMap({
             ]}
           >
             {isCloseData.map((data, index) => (
-              <CloseMarkerContainer
-                index={index}
-                key={`OpenMarkerContainer-${data.lat}-${data.lng}`}
-                position={{ lat: data.lat, lng: data.lng }}
-                // 마커 마우스 올리면 나타나는 화면 div
-                content={
-                  <div
-                    style={{
-                      width: '100%',
-                      whiteSpace: 'nowrap',
-                      height: '100%',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      padding: '10px',
-                      textAlign: 'center',
-                    }}
-                  >
-                    가게명: {data.title}
-                    <hr />
-                    영업시간: {data.openTime} ~ {data.closeTime} <hr />
-                    카테고리:{' '}
-                    {
-                      data.category === 'bread'
-                        ? '붕어빵'
-                        : data.category === 'snack'
-                          ? '분식'
-                          : data.category === 'hotteok'
-                            ? '호떡'
-                            : data.category === 'sweetPotato'
-                              ? '군고구마'
-                              : data.category // 조건에 맞지 않으면(예외) 원래 값 출력
-                    }{' '}
-                    <hr />
-                    {data.status === 'opened' ? (
-                      <div>영업 중</div>
-                    ) : (
-                      <div>영업 준비 중</div>
-                    )}
-                  </div>
-                }
-                onClick={() => {
-                  setSelectedMarker(index);
-                  console.log('shopId: ', data.shopId);
-                  moveToShop(data.shopId);
-                }}
-                isClicked={selectedMarker === index}
-              />
+              
             ))}
-          </MarkerClusterer>
+          </MarkerClusterer> */}
           {/* </DrawingManager> */}
-        </KakaoMap>
+        </Map>
         <button onClick={onButtonClick} className="hidden"></button>
       </div>
     </>
   );
 }
 
-export default DetailMap;
+export default MapComponent;
